@@ -1,2 +1,2 @@
 # UnitySnake
-A snake game made in Unity as  quick exercise.
+A snake game made in Unity as a quick exercise.
