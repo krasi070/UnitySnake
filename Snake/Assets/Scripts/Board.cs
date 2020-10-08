@@ -35,6 +35,12 @@ public class Board : MonoBehaviour
         CheckForCoinCollision();
         CheckForGameOver();
 
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            GameObject snakePrefab = Resources.Load<GameObject>("Prefabs/Shop");
+            GameObject snakeObj = Instantiate(snakePrefab, Vector3.zero, Quaternion.identity);
+        }
+
         if (gameOverTextField.IsActive() && Input.GetKeyDown(KeyCode.Space))
         {
             Reset();
@@ -105,7 +111,7 @@ public class Board : MonoBehaviour
         _coin.StartPulsating();
     }
 
-    private void InitBoard()
+    public void InitBoard()
     {
         for (int row = 0; row < rows; row++)
         {
@@ -139,6 +145,17 @@ public class Board : MonoBehaviour
         gameOverTextField.color = backgroundColor;
     }
 
+    public void DeleteBoardElements()
+    {
+        foreach (Transform child in transform)
+        {
+            if (child.tag != "Player" && child.name != "Coin")
+            {
+                Destroy(child.gameObject);
+            }
+        }
+    }
+
     private void InitShadow()
     {
         GameObject tile = new GameObject("Shadow");
@@ -155,9 +172,22 @@ public class Board : MonoBehaviour
     {
         if ((_coin.Coordinates - _snake.Head.Coordinates).magnitude == 0)
         {
+            CoinGetEffect(_coin.transform.position);
             _snake.InitBodyPart();
             _coin.ChangePosition(_snake.GetFreeCoordinates(rows, columns));
             scoreTracker.Score++;
+        }
+    }
+
+    private void CoinGetEffect(Vector3 pos)
+    {
+        GameObject circleEffect = Resources.Load<GameObject>("Prefabs/CircleEffect");
+        GameObject ceInstance = Instantiate(circleEffect, pos, Quaternion.identity);
+        ceInstance.GetComponent<CircleDrawer>().StartEffect();
+
+        if (scoreTracker.Score > 5)
+        {
+            Camera.main.GetComponent<ShakeBehaviour>().TriggerShake(Mathf.Min(2, (scoreTracker.Score - 5) * 0.1f));
         }
     }
 

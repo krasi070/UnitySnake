@@ -120,6 +120,13 @@ public class Snake : MonoBehaviour
 
     }
 
+    public void UpdateSpeed(float newSpeed)
+    {
+        speed = newSpeed;
+        _waitTime = 1 / speed;
+        _timer = 0;
+    }
+
     private void Move()
     {
         Board board = GetComponentInParent<Board>();
