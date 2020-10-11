@@ -20,6 +20,7 @@ public class BodyPart : MonoBehaviour
         set
         {
             transform.position = new Vector2(value.x, value.y);
+
             _coordinates = value;
         }
     }
@@ -34,7 +35,7 @@ public class BodyPart : MonoBehaviour
         {
             IsNew = false;
         }
-        
+
         Coordinates = newCoordinates;
     }
 

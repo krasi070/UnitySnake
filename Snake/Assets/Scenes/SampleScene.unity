@@ -341,8 +341,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   wrapAround: 1
-  rows: 16
-  columns: 16
+  rows: 10
+  columns: 10
   boardColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
   backgroundColor: {r: 0.4901961, g: 0.11764707, b: 0.11764707, a: 1}
   scoreTracker: {fileID: 1722850531}

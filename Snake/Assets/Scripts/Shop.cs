@@ -27,6 +27,31 @@ public class Shop : MonoBehaviour
         {
             IncreaseBoardSize(0, 1);
         }
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            _snake.CutTail(1);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha2))
+        {
+            _snake.CutTail(2);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha3))
+        {
+            _snake.CutTail(3);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha4))
+        {
+            _snake.CutTail(4);
+        }
+
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            _snake.CutTail(5);
+        }
     }
 
     private void IncreaseSnakeSpeed()

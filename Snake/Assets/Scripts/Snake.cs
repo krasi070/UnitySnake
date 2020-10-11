@@ -11,14 +11,19 @@ public class Snake : MonoBehaviour
     private float _waitTime;
     private float _timer;
 
+    // The head is the last element in the list
+    private List<BodyPart> _bodyParts;
+
     public BodyPart Head { get; private set; }
 
     public bool Active { get; set; }
 
     private void Start()
     {
+        _bodyParts = new List<BodyPart>();
         Head = GetComponentInChildren<BodyPart>();
         Head.Coordinates = Vector2Int.zero;
+        _bodyParts.Add(Head);
         _direction = Vector2Int.right;
 
         _waitTime = 1 / speed;
@@ -53,6 +58,7 @@ public class Snake : MonoBehaviour
         bodyPart.Next = Head;
         bodyPart.IsNew = true;
         bodyPart.Coordinates = Head.Coordinates;
+        _bodyParts.Add(bodyPart);
         AddShadowToBodyPart(bodyPart);
         Head = bodyPart;
     }
@@ -84,25 +90,6 @@ public class Snake : MonoBehaviour
         return freeCoordinates;
     }
 
-    public IList<Vector2Int> GetSnakeCoordinates(bool excludeHead)
-    {
-        IList<Vector2Int> snakeCoordinates = new List<Vector2Int>();
-        BodyPart currBodyPart = Head;
-
-        if (excludeHead)
-        {
-            currBodyPart = currBodyPart.Next;
-        }
-
-        while (currBodyPart != null)
-        {
-            snakeCoordinates.Add(currBodyPart.Coordinates);
-            currBodyPart = currBodyPart.Next;
-        }
-
-        return snakeCoordinates;
-    }
-
     public void ResetValues()
     {
         BodyPart currBodyPart = Head.Next;
@@ -117,7 +104,8 @@ public class Snake : MonoBehaviour
         Head.Next = null;
         _direction = Vector2Int.right;
         _timer = 0;
-
+        _bodyParts = new List<BodyPart>();
+        _bodyParts.Add(Head);
     }
 
     public void UpdateSpeed(float newSpeed)
@@ -125,6 +113,21 @@ public class Snake : MonoBehaviour
         speed = newSpeed;
         _waitTime = 1 / speed;
         _timer = 0;
+    }
+
+    public void CutTail(int amountToCut)
+    {
+        if (amountToCut < _bodyParts.Count)
+        {
+            _bodyParts[amountToCut].Next = null;
+
+            for (int i = 0; i < amountToCut; i++)
+            {
+                Destroy(_bodyParts[i].gameObject);
+            }
+
+            _bodyParts.RemoveRange(0, amountToCut);
+        }
     }
 
     private void Move()
@@ -165,11 +168,9 @@ public class Snake : MonoBehaviour
 
         if (!Head.IsNew)
         {
-            IList<Vector2Int> snakeCoordinates = GetSnakeCoordinates(true);
-
-            foreach (Vector2Int bodyPartCoordinate in snakeCoordinates)
+            foreach (BodyPart bodyPart in _bodyParts)
             {
-                if ((nextCoordinates - bodyPartCoordinate).magnitude == 0)
+                if ((nextCoordinates - bodyPart.Coordinates).magnitude == 0)
                 {
                     return true;
                 }

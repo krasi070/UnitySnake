@@ -187,7 +187,7 @@ public class Board : MonoBehaviour
 
         if (scoreTracker.Score > 5)
         {
-            Camera.main.GetComponent<ShakeBehaviour>().TriggerShake(Mathf.Min(2, (scoreTracker.Score - 5) * 0.1f));
+            Camera.main.GetComponent<ShakeBehaviour>().TriggerShake(Mathf.Min(4, (scoreTracker.Score - 5) * 0.1f));
         }
     }
 
