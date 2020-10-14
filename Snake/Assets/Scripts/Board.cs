@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class Board : MonoBehaviour
@@ -11,6 +12,7 @@ public class Board : MonoBehaviour
     public Color backgroundColor;
 
     public ScoreTracker scoreTracker;
+    public Text multiplierText;
     public Text gameOverTextField;
 
     private Sprite _bg1Sprite;
@@ -21,6 +23,7 @@ public class Board : MonoBehaviour
 
     private Snake _snake;
     private Coin _coin;
+    private List<MultiplierBlock> _multiplierBlocks;
 
     private void Start()
     {
@@ -28,11 +31,16 @@ public class Board : MonoBehaviour
         InitBoard();
         LoadSnake();
         InitCoin();
+
+        _multiplierBlocks = new List<MultiplierBlock>();
     }
 
     private void Update()
     {
+        multiplierText.enabled = _snake.Multiplier > 1;
+
         CheckForCoinCollision();
+        CheckForMultiplierBlockCollision();
         CheckForGameOver();
 
         if (Input.GetKeyDown(KeyCode.Q))
@@ -87,6 +95,7 @@ public class Board : MonoBehaviour
         headRenderer.color = backgroundColor;
 
         _snake = snakeObj.GetComponent<Snake>();
+        _snake.Multiplier = 1;
     }
 
     private void InitCoin()
@@ -109,6 +118,32 @@ public class Board : MonoBehaviour
         _coin = coin.AddComponent<Coin>();
         _coin.ChangePosition(_snake.GetFreeCoordinates(rows, columns));
         _coin.StartPulsating();
+    }
+
+    public void InitMultiplierBlock()
+    {
+        GameObject mulitplierBlock = new GameObject("MulitplierBlock");
+        mulitplierBlock.transform.SetParent(transform);
+
+        SpriteRenderer renderer = mulitplierBlock.AddComponent<SpriteRenderer>();
+        renderer.sprite = Resources.Load<Sprite>("Sprites/white_sprite");
+        renderer.color = new Color32(255, 109, 232, 255);
+
+        GameObject shadow = new GameObject("Shadow");
+        shadow.transform.position = mulitplierBlock.transform.position + new Vector3(0.125f, -0.125f, 1f);
+        shadow.transform.SetParent(mulitplierBlock.transform);
+
+        SpriteRenderer shadowRenderer = shadow.AddComponent<SpriteRenderer>();
+        shadowRenderer.sprite = Resources.Load<Sprite>("Sprites/white_sprite");
+        shadowRenderer.color = new Color32(30, 30, 30, 255);
+
+        MultiplierBlock newMultBlock = mulitplierBlock.AddComponent<MultiplierBlock>();
+        newMultBlock.SpriteRenderer = renderer;
+        newMultBlock.ShadowSpriteRenderer = shadowRenderer;
+
+        newMultBlock.ChangePosition(GetFreeCoordinates());
+        newMultBlock.StartPulsating();
+        _multiplierBlocks.Add(newMultBlock);
     }
 
     public void InitBoard()
@@ -156,6 +191,53 @@ public class Board : MonoBehaviour
         }
     }
 
+    private void ChangeMultiplierBlocksPositions()
+    {
+        foreach (MultiplierBlock multBlock in _multiplierBlocks)
+        {
+            multBlock.Hidden = true;
+        }
+
+        foreach (MultiplierBlock multBlock in _multiplierBlocks)
+        {
+            multBlock.ChangePosition(GetFreeCoordinates());
+            multBlock.Hidden = false;
+        }
+    }
+
+    private IList<Vector2Int> GetMultiplierBlockCoordinates()
+    {
+        IList<Vector2Int> coord = new List<Vector2Int>();
+
+        foreach (MultiplierBlock multBlock in _multiplierBlocks)
+        {
+            if (!multBlock.Hidden)
+            {
+                coord.Add(multBlock.Coordinates);
+            }
+        }
+
+        return coord;
+    }
+
+    private List<Vector2Int> GetFreeCoordinates()
+    {
+        List<Vector2Int> coord = new List<Vector2Int>();
+        coord.AddRange(_snake.GetFreeCoordinates(rows, columns));
+
+        for (int i = 0; i < _multiplierBlocks.Count; i++)
+        {
+            if (!_multiplierBlocks[i].Hidden)
+            {
+                coord.Remove(_multiplierBlocks[i].Coordinates);
+            }
+        }
+
+        coord.Remove(_coin.Coordinates);
+
+        return coord;
+    }
+
     private void InitShadow()
     {
         GameObject tile = new GameObject("Shadow");
@@ -173,9 +255,29 @@ public class Board : MonoBehaviour
         if ((_coin.Coordinates - _snake.Head.Coordinates).magnitude == 0)
         {
             CoinGetEffect(_coin.transform.position);
+
             _snake.InitBodyPart();
+
             _coin.ChangePosition(_snake.GetFreeCoordinates(rows, columns));
-            scoreTracker.Score++;
+            ChangeMultiplierBlocksPositions();
+
+            scoreTracker.Score += _snake.Multiplier;
+            _snake.Multiplier = 1;
+        }
+    }
+
+    private void CheckForMultiplierBlockCollision()
+    {
+        foreach (MultiplierBlock multBlock in _multiplierBlocks)
+        {
+            if (!multBlock.Hidden && (multBlock.Coordinates - _snake.Head.Coordinates).magnitude == 0)
+            {
+                multBlock.Hidden = true;
+
+                _snake.Multiplier *= 2;
+                multiplierText.text = $"×{_snake.Multiplier}";
+                Debug.Log($"Multiplier: {_snake.Multiplier}");
+            }
         }
     }
 
@@ -189,6 +291,8 @@ public class Board : MonoBehaviour
         {
             Camera.main.GetComponent<ShakeBehaviour>().TriggerShake(Mathf.Min(4, (scoreTracker.Score - 5) * 0.1f));
         }
+
+        // AudioManager.instance.Play($"GetCoin", true, true);
     }
 
     private void CheckForGameOver()

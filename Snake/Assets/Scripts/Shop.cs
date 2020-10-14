@@ -52,6 +52,11 @@ public class Shop : MonoBehaviour
         {
             _snake.CutTail(5);
         }
+
+        if (Input.GetKeyDown(KeyCode.V))
+        {
+            _board.InitMultiplierBlock();
+        }
     }
 
     private void IncreaseSnakeSpeed()

@@ -18,6 +18,8 @@ public class Snake : MonoBehaviour
 
     public bool Active { get; set; }
 
+    public int Multiplier { get; set; }
+
     private void Start()
     {
         _bodyParts = new List<BodyPart>();
